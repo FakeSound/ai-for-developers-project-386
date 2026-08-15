@@ -1,0 +1,10 @@
+node_modules/
+dist/
+tsp-output/
+
+# Мок-спека собирается из openapi/openapi.yaml на каждом запуске
+mock/openapi.mock.yaml
+
+.DS_Store
+*.log
+.env.local

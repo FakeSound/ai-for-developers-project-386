@@ -1,0 +1,24 @@
+{
+  "name": "aicalls",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "spec": "tsp compile main.tsp",
+    "gen:api": "npm run spec && openapi-typescript openapi/openapi.yaml -o frontend/src/api/schema.d.ts",
+    "mock": "npm run spec && node mock/build-mock.mjs && prism mock mock/openapi.mock.yaml -p 3000 --cors",
+    "dev": "concurrently -n mock,web -c magenta,cyan \"npm:mock\" \"npm --prefix frontend run dev\"",
+    "build": "npm run spec && npm --prefix frontend run build",
+    "install:all": "npm install && npm --prefix frontend install"
+  },
+  "devDependencies": {
+    "@date-fns/tz": "^1.4.1",
+    "@stoplight/prism-cli": "^5.16.0",
+    "@typespec/compiler": "^1.15.0",
+    "@typespec/http": "^1.15.0",
+    "@typespec/openapi3": "^1.15.0",
+    "concurrently": "^9.2.1",
+    "openapi-typescript": "^7.13.0",
+    "typescript": "^5.9.3",
+    "yaml": "^2.8.1"
+  }
+}
