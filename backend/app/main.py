@@ -6,6 +6,9 @@
 
 Ни одна операция не требует авторизации: владелец — заранее заданный профиль,
 гость анонимен. Админская часть отличается только маршрутом.
+
+В Docker-образе этот же процесс отдаёт и собранный фронтенд (`web.py`),
+поэтому браузер ходит на один origin и CORS не задействован.
 """
 
 from __future__ import annotations
@@ -24,6 +27,7 @@ from .models import ApiError, ErrorCode
 from .routers import admin, bookings, event_types, owner
 from .seed import seed
 from .store import store
+from .web import mount_static
 
 DESCRIPTION = """
 HTTP API сервиса бронирования встреч.
@@ -122,3 +126,8 @@ app.include_router(owner.router, prefix=API_PREFIX)
 app.include_router(event_types.router, prefix=API_PREFIX)
 app.include_router(bookings.router, prefix=API_PREFIX)
 app.include_router(admin.router, prefix=API_PREFIX)
+
+# Строго после роутеров: раздача статики заканчивается catch-all маршрутом,
+# который иначе перехватил бы адреса контракта. В разработке сборки нет,
+# и вызов не добавляет приложению ничего.
+mount_static(app)
