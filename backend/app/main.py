@@ -43,7 +43,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="AICalls Booking API",
     description=DESCRIPTION,
-    version="0.0.0",
+    # Версию ведёт release-please, маркер в комментарии — его якорь.
+    version="0.1.0",  # x-release-please-version
     lifespan=lifespan,
 )
 

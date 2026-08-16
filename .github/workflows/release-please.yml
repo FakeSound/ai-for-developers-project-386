@@ -1,0 +1,40 @@
+# Автоматизация релизов: после мёрджа в main бот создаёт или обновляет
+# release-PR с changelog и предложенной версией, а мёрдж этого PR
+# ставит тег и публикует GitHub Release.
+#
+# Настройка — release-please-config.json, текущая версия —
+# .release-please-manifest.json (правит только бот).
+#
+# Требует включённой настройки репозитория:
+# Settings -> Actions -> General -> Workflow permissions ->
+# "Allow GitHub Actions to create and approve pull requests".
+
+name: release-please
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+# Релизные прогоны не отменяем: оборванный оставил бы PR в полуготовом виде.
+concurrency:
+  group: release-please
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      # PR, созданный под GITHUB_TOKEN, не запускает другие workflow —
+      # на релизном PR не отработают e2e и commitlint. Если это понадобится,
+      # сюда подставляется PAT или токен GitHub App.
+      - uses: googleapis/release-please-action@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
