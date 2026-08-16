@@ -1,26 +1,36 @@
 {
   "name": "aicalls",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
     "spec": "tsp compile main.tsp",
     "gen:api": "npm run spec && openapi-typescript openapi/openapi.yaml -o frontend/src/api/schema.d.ts",
     "api": "backend/.venv/bin/uvicorn app.main:app --app-dir backend --port 3000 --reload",
-    "api:install": "python3.11 -m venv backend/.venv && backend/.venv/bin/pip install -q -r backend/requirements.txt",
+    "api:ci": "backend/.venv/bin/uvicorn app.main:app --app-dir backend --port 3000",
+    "api:install": "${PYTHON:-python3.11} -m venv backend/.venv && backend/.venv/bin/pip install -q -r backend/requirements.txt",
     "api:test": "backend/.venv/bin/pytest backend -q",
     "mock": "npm run spec && node mock/build-mock.mjs && prism mock mock/openapi.mock.yaml -p 3000 --cors",
     "dev": "concurrently -n api,web -c green,cyan \"npm:api\" \"npm --prefix frontend run dev\"",
     "dev:mock": "concurrently -n mock,web -c magenta,cyan \"npm:mock\" \"npm --prefix frontend run dev -- --mode mock\"",
     "build": "npm run spec && npm --prefix frontend run build",
-    "install:all": "npm install && npm --prefix frontend install && npm run api:install"
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "e2e:report": "playwright show-report",
+    "install:all": "npm install && npm --prefix frontend install && npm run api:install",
+    "prepare": "husky"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.1.0",
     "@date-fns/tz": "^1.4.1",
+    "@playwright/test": "^1.57.0",
     "@stoplight/prism-cli": "^5.16.0",
     "@typespec/compiler": "^1.15.0",
     "@typespec/http": "^1.15.0",
     "@typespec/openapi3": "^1.15.0",
     "concurrently": "^9.2.1",
+    "husky": "^9.1.7",
     "openapi-typescript": "^7.13.0",
     "typescript": "^5.9.3",
     "yaml": "^2.8.1"

@@ -1,0 +1,84 @@
+# Проверка Conventional Commits: сообщения коммитов ветки и заголовок PR.
+# Соглашение — CONTRIBUTING.md, правила — commitlint.config.js.
+
+name: commits
+
+on:
+  pull_request:
+    # edited нужен, чтобы проверка перезапускалась после правки заголовка PR.
+    types: [opened, edited, synchronize, reopened]
+
+concurrency:
+  group: commits-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  commitlint:
+    name: сообщения коммитов
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Нужна вся история: проверяем диапазон base..head.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - run: npm ci
+
+      - name: commitlint
+        run: |
+          npx commitlint \
+            --from ${{ github.event.pull_request.base.sha }} \
+            --to ${{ github.event.pull_request.head.sha }} \
+            --verbose
+
+  pr-title:
+    name: заголовок PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: read
+
+    steps:
+      # В main мёрджим squash-мёрджем: в историю уезжает заголовок PR,
+      # и читать его будет release-please — формат обязателен и для него.
+      - uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
+          scopes: |
+            contract
+            backend
+            frontend
+            e2e
+            ci
+            docs
+            deps
+            main
+          requireScope: false
+          subjectPattern: ^(?![A-ZА-ЯЁ]).+[^.]$
+          subjectPatternError: |
+            Заголовок «{subject}» не подходит под соглашение: он должен начинаться
+            со строчной буквы и не заканчиваться точкой. Формат целиком — в CONTRIBUTING.md.

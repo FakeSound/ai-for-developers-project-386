@@ -1,5 +1,6 @@
 ### Hexlet tests and linter status:
 [![Actions Status](https://github.com/FakeSound/ai-for-developers-project-386/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/FakeSound/ai-for-developers-project-386/actions)
+[![e2e](https://github.com/FakeSound/ai-for-developers-project-386/actions/workflows/e2e.yml/badge.svg)](https://github.com/FakeSound/ai-for-developers-project-386/actions/workflows/e2e.yml)
 
 # AICalls
 
@@ -34,6 +35,7 @@ npm run spec                    # main.tsp -> openapi/openapi.yaml
 npm run gen:api                 # openapi.yaml -> frontend/src/api/schema.d.ts
 npm run api                     # только бэкенд на :3000 (с автоперезагрузкой)
 npm run api:test                # тесты бэкенда
+npm run e2e                     # сквозные сценарии в браузере
 npm --prefix frontend run dev   # только фронтенд
 npm run build                   # спека + продакшен-сборка фронтенда
 npm run dev:mock                # старый режим: мок Prism вместо бэкенда
@@ -89,6 +91,8 @@ backend/                 бэкенд на FastAPI: реализация кон�
 mock/dataset.mjs         мок-данные: владелец, типы событий, брони, сетка слотов
 mock/build-mock.mjs      добавляет примеры в OpenAPI -> mock/openapi.mock.yaml
 frontend/                приложение на Vite + React + shadcn/ui
+e2e/                     сквозные сценарии на Playwright
+docs/scenarios.md        пользовательские сценарии, которые проверяет e2e
 docker-compose.yml       два сервиса; наружу опубликован только порт 80
 backend/Dockerfile       образ бэкенда: uvicorn без reload
 frontend/Dockerfile      сборка фронтенда -> nginx со статикой
@@ -135,6 +139,51 @@ backend/tests/              pytest поверх TestClient
 Документация запущенного бэкенда: <http://localhost:3000/docs>.
 Тесты (`npm run api:test`) проверяют бизнес-правила и сверяют набор операций
 с `openapi/openapi.yaml`.
+
+## Сквозные тесты
+
+Пользовательские сценарии описаны в [`docs/scenarios.md`](docs/scenarios.md)
+и проверяются автоматически: идентификатор сценария (`Г-3`, `В-1`, …) стоит
+в заголовке теста, так что документ и код не разъезжаются.
+
+```bash
+npm run e2e                     # весь набор
+npm run e2e:ui                  # интерактивный режим
+npm run e2e:report              # отчёт последнего прогона
+npx playwright test -g "Г-3"    # один сценарий
+```
+
+Тесты на TypeScript, типы для запросов к API берутся из того же
+`schema.d.ts`, что и в приложении, — расхождение с контрактом не пройдёт молча.
+
+Приложение поднимает сам Playwright: uvicorn на 3000 и `vite preview` на 4173
+с прокси на бэкенд. Браузер, как и в проде за nginx, ходит на один origin.
+Отдельно ничего запускать не нужно, сборка фронтенда входит в прогон.
+Готовое окружение подставляется переменной `E2E_BASE_URL`.
+
+Прогон строго последовательный: бэкенд хранит данные в памяти одного процесса,
+а занятость календаря глобальная — параллельные воркеры дрались бы за слоты.
+
+## Коммиты и релизы
+
+Формат коммитов — [Conventional Commits](CONTRIBUTING.md), проверяется локальным
+хуком, джобой `commitlint` по коммитам PR и отдельной проверкой заголовка PR.
+Правила общие для людей и для агента, для агента они продублированы
+в [`CLAUDE.md`](CLAUDE.md).
+
+Версию и `CHANGELOG.md` ведёт release-please: после мёрджа в `main` он создаёт
+или обновляет PR `chore(main): release X.Y.Z`, а мёрдж этого PR ставит тег
+и публикует релиз. Версия одна на весь репозиторий; руками её не правят.
+
+```
+.github/workflows/e2e.yml              сквозные сценарии на каждый PR и push в main
+.github/workflows/commits.yml          Conventional Commits: коммиты ветки и заголовок PR
+.github/workflows/release-please.yml   release-PR с changelog и версией
+```
+
+Чтобы release-please мог создавать PR, в настройках репозитория должно быть
+включено Settings → Actions → General → Workflow permissions →
+«Allow GitHub Actions to create and approve pull requests».
 
 ## Мок Prism
 

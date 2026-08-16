@@ -11,6 +11,12 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 
+# Артефакты прогона e2e
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
 .DS_Store
 *.log
 .env.local
