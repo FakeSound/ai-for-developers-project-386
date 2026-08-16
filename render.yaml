@@ -1,0 +1,18 @@
+# Blueprint для Render: описывает сервис так, чтобы его можно было пересоздать
+# из репозитория (Dashboard -> New -> Blueprint), не настраивая поля руками.
+#
+# Образ собирается по корневому Dockerfile, приложение слушает PORT — ту же
+# переменную Render передаёт в контейнер сам.
+
+services:
+  - type: web
+    name: aicalls
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    # Отдельного health-эндпоинта в контракте нет: берём существующий GET /owner.
+    healthCheckPath: /api/v1/owner
+    envVars:
+      - key: PORT
+        value: 10000

@@ -1,12 +1,15 @@
-# Два контейнера: фронтенд (nginx со статикой) и бэкенд (uvicorn).
-# Наружу опубликован только порт 80 фронтенда — у бэкенда есть expose,
-# но нет ports, поэтому его 3000 доступен лишь соседям по сети compose.
+# Локальный запуск ровно того же образа, что уезжает в прод: один сервис,
+# один порт, порт задаётся переменной PORT.
+#
+#   docker compose up -d --build   ->  http://localhost:8080
 
 services:
-  backend:
-    build: ./backend
-    expose:
-      - "3000"
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
     restart: unless-stopped
     # В slim-образе нет curl и wget, поэтому проверяем питоном. Отдельного
     # health-эндпоинта в контракте нет — берём существующий GET /owner.
@@ -15,19 +18,8 @@ services:
         - CMD
         - python
         - -c
-        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:3000/api/v1/owner')
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/api/v1/owner')
       interval: 10s
       timeout: 3s
       retries: 5
       start_period: 5s
-
-  frontend:
-    build: ./frontend
-    ports:
-      - "80:80"
-    # Имя backend в proxy_pass резолвится при старте nginx: без готового
-    # бэкенда он упал бы с "host not found in upstream".
-    depends_on:
-      backend:
-        condition: service_healthy
-    restart: unless-stopped

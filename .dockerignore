@@ -1,0 +1,36 @@
+# Контекст сборки: в образ едут только backend/app, backend/requirements.txt
+# и исходники frontend. Всё остальное — лишние мегабайты и лишние
+# инвалидации кэша слоёв.
+#
+# Пути без `**` считаются от корня контекста, поэтому вложенные каталоги
+# (frontend/node_modules и прочие) перечислены со звёздочками.
+
+.git/
+.github/
+.husky/
+
+# Зависимости ставятся внутри образа из lock-файлов.
+**/node_modules/
+backend/.venv/
+
+# Сборка фронтенда делается на первой стадии, локальная не нужна.
+frontend/dist/
+tsp-output/
+mock/openapi.mock.yaml
+
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+
+# Тесты бэкенда и сквозные сценарии в продакшен-образе не запускаются.
+backend/tests/
+backend/pytest.ini
+e2e/
+playwright.config.ts
+playwright-report/
+test-results/
+blob-report/
+
+**/.DS_Store
+**/*.log
+**/.env.local
