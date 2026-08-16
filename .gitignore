@@ -5,6 +5,12 @@ tsp-output/
 # Мок-спека собирается из openapi/openapi.yaml на каждом запуске
 mock/openapi.mock.yaml
 
+# Окружение бэкенда
+backend/.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
 .DS_Store
 *.log
 .env.local

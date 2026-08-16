@@ -87,7 +87,7 @@ export const networkError = () =>
     status: 0,
     code: "network_error",
     message:
-      "Не удалось связаться с API. Проверьте, что мок-сервер запущен: npm run mock",
+      "Не удалось связаться с API. Проверьте, что бэкенд запущен: npm run api",
   });
 
 /** Текст для показа пользователю. */

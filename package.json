@@ -5,10 +5,14 @@
   "scripts": {
     "spec": "tsp compile main.tsp",
     "gen:api": "npm run spec && openapi-typescript openapi/openapi.yaml -o frontend/src/api/schema.d.ts",
+    "api": "backend/.venv/bin/uvicorn app.main:app --app-dir backend --port 3000 --reload",
+    "api:install": "python3.11 -m venv backend/.venv && backend/.venv/bin/pip install -q -r backend/requirements.txt",
+    "api:test": "backend/.venv/bin/pytest backend -q",
     "mock": "npm run spec && node mock/build-mock.mjs && prism mock mock/openapi.mock.yaml -p 3000 --cors",
-    "dev": "concurrently -n mock,web -c magenta,cyan \"npm:mock\" \"npm --prefix frontend run dev\"",
+    "dev": "concurrently -n api,web -c green,cyan \"npm:api\" \"npm --prefix frontend run dev\"",
+    "dev:mock": "concurrently -n mock,web -c magenta,cyan \"npm:mock\" \"npm --prefix frontend run dev -- --mode mock\"",
     "build": "npm run spec && npm --prefix frontend run build",
-    "install:all": "npm install && npm --prefix frontend install"
+    "install:all": "npm install && npm --prefix frontend install && npm run api:install"
   },
   "devDependencies": {
     "@date-fns/tz": "^1.4.1",
