@@ -1,0 +1,33 @@
+# Два контейнера: фронтенд (nginx со статикой) и бэкенд (uvicorn).
+# Наружу опубликован только порт 80 фронтенда — у бэкенда есть expose,
+# но нет ports, поэтому его 3000 доступен лишь соседям по сети compose.
+
+services:
+  backend:
+    build: ./backend
+    expose:
+      - "3000"
+    restart: unless-stopped
+    # В slim-образе нет curl и wget, поэтому проверяем питоном. Отдельного
+    # health-эндпоинта в контракте нет — берём существующий GET /owner.
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:3000/api/v1/owner')
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    # Имя backend в proxy_pass резолвится при старте nginx: без готового
+    # бэкенда он упал бы с "host not found in upstream".
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped

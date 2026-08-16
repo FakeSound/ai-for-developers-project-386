@@ -1,0 +1,10 @@
+# Зависимости ставит `npm ci` внутри образа: локальная папка не должна
+# затирать результат установки.
+node_modules/
+dist/
+
+.env.local
+*.log
+.git
+Dockerfile
+.dockerignore
